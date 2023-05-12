@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const bodyParser = require('body-parser');
 const cors = require("cors");
+const authRoutes = require("./src/routes/public/auth")
 
 require('./src/config/sequelize');
 const app = express();
@@ -17,7 +18,7 @@ app.use(
       credentials: true
     })
   );
-
+app.use("/api/v1/public",authRoutes);
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);

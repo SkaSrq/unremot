@@ -10,12 +10,15 @@ const sequelize = new Sequelize(
     dialect: process.env.DB_DIALECT,
   },
 );
-
 sequelize
   .authenticate()
   .then(() => {
     console.log('Connection has been established successfully.');
+    sequelize.sync();
+    console.log('All models were synchronized successfully.');
   })
   .catch((err) => {
     console.error('Unable to connect to the database:', err);
   });
+
+module.exports = sequelize;

@@ -1,49 +1,21 @@
-const Joi = require("joi");
-const authService = require("../services/userService");
-const response = require("../utils/response");
-const customError = require("../utils/error");
-const createUserController = async (req, res) => {
-  const schema = Joi.object({
-    firstName: Joi.string().required(),
-    lastName: Joi.string().required(),
-    username: Joi.string().alphanum().min(3).max(30).required(),
-    email: Joi.string().email().required(),
-    password: Joi.string()
-      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
-      .required(),
-  });
-  try {
-    const { firstName, lastName, username, email, password } =
-      await schema.validateAsync(req.body);
-      const authServiceResponse = await authService.createUserService(firstName, lastName, username, email, password);
-      return response.successResponse(req,res,authServiceResponse);
-  } catch (error) {
-    if (error instanceof customError) {
-      return response.errorResponse(req, res, error.message, error.statusCode,error);
+const userService = require("../services/userService");
+const CustomError = require("../utils/error");
+const Response = require("../utils/response");
+
+const jwtSecret  = process.env.JWT_SECRET;
+
+const getUserController = async(req,res)=>{
+    try {
+        const { id } = req.user;
+        const user = await userService.getUserService(id);
+        return Response.successResponse(req,res,user,200);
+    } catch (error) {
+        console.log(error);
+        if(error instanceof CustomError){
+            return Response.errorResponse(req,res,error.message,error.statusCode,error);
+        }
+        return Response.errorResponse(req,res,"Internal Server Error",500,{});
     }
-    return response.errorResponse(req, res, "Bad request", 400, error);
-  }
 };
-const loginController = async(req, res) => {
-  const schema = Joi.object({
-    username: Joi.string().alphanum().min(3).max(30).required(),
-    password: Joi.string()
-      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
-      .required(),
-  });
-  try {
-    const {username, password } =
-      await schema.validateAsync(req.body);
-      const authServiceResponse = await authService.loginService( username, password);
-      return response.successResponse(req,res,authServiceResponse);
-  } catch (error) {
-    if (error instanceof customError) {
-      return response.errorResponse(req, res, error.message, error.statusCode,error);
-    }
-    return response.errorResponse(req, res, "Bad request", 400, error);
-  }
-};
-module.exports = {
-  createUserController: createUserController,
-  loginController: loginController,
-};
+
+module.exports = {getUserController:getUserController};
